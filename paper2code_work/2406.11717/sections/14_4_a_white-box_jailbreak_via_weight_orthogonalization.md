@@ -1,0 +1,3 @@
+# **4 A white-box jailbreak via weight orthogonalization**
+
+In this section, we propose a novel white-box jailbreak method through _weight orthogonalization_ . This technique directly modifies model weights to eliminate the representation of the refusal direction, resulting in a model that retains its original capabilities but no longer refuses harmful instructions. This new approach offers a simpler way to jailbreak open-source models compared to prior methodologies involving fine-tuning (Lermen et al., 2023; Yang et al., 2023; Zhan et al., 2023), as it does not require gradient-based optimization nor any examples of harmful completions.

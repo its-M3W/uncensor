@@ -1,0 +1,3 @@
+# **G.2 TRUTHFULQA accuracy**
+
+TRUTHFULQA measures the performance of language models in generating truthful and accurate responses, particularly in areas prone to human misconceptions and falsehoods. Table 8 displays clearly that TRUTHFULQA performance is consistently worse for orthogonalized models as compared with unmodified models. TRUTHFULQA contains questions that touch on sensitive topics such as misinformation, stereotypes, and conspiracies. For such questions, models with and without safety guardrails may understandably generate different responses. Figure 20 displays an example of a conspiracy-flavored question from TRUTHFULQA, and the contrasting responses from LLAMA-3 8B INSTRUCT and its orthogonalized version.
