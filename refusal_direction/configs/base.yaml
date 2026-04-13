@@ -1,0 +1,65 @@
+# Configuration for "Refusal in Language Models Is Mediated by a Single Direction"
+# Paper: https://arxiv.org/abs/2406.11717
+# Every value is cited to a paper section or flagged as [UNSPECIFIED] / [FROM_OFFICIAL_CODE].
+
+model:
+  # Any HuggingFace causal-LM chat model. The per-family chat template in
+  # src/utils.py needs an entry for the model family; otherwise we fall back
+  # to tokenizer.apply_chat_template.
+  # §2.2, Table 1 — the paper evaluates 13 open chat models (Qwen, Yi, Gemma, Llama-2, Llama-3).
+  name: "Qwen/Qwen1.5-1.8B-Chat"
+  # [UNSPECIFIED] dtype not stated in the paper; bfloat16 is the common default for ≥7B inference.
+  # Alternatives: float32 (small models / CPU), float16.
+  dtype: "bfloat16"
+  # [UNSPECIFIED] device not stated; CLI override available.
+  device: "cuda"
+
+data:
+  # §2.2 — "Each dataset consists of train and validation splits of 128 and 32 samples, respectively."
+  n_train: 128
+  n_val: 32
+  # §3.1 — "JailbreakBench (Chao et al., 2024), a dataset of 100 harmful instructions"
+  n_bypass_eval: 100
+  # §3.2 — "100 randomly sampled harmless instructions from ALPACA"
+  n_induce_eval: 100
+  # [UNSPECIFIED] sampling seed — paper does not publish the seed they used.
+  seed: 42
+  # §2.2 — "harmful instructions drawn from ADVBENCH, MALICIOUSINSTRUCT, TDC2023, HARMBENCH"
+  # We ship loaders for AdvBench / MaliciousInstruct / HarmBench (TDC2023 is HarmBench's
+  # precursor and is covered by HarmBench). The full mix is built by concatenate+shuffle.
+  harmful_sources:
+    - "walledai/AdvBench"
+    - "walledai/MaliciousInstruct"
+    - "walledai/HarmBench"
+  # §2.2 — "harmless instructions sampled from ALPACA (Taori et al., 2023)"
+  harmless_source: "tatsu-lab/alpaca"
+  # §3.1 — JailbreakBench as the bypass-eval dataset.
+  bypass_eval_source: "JailbreakBench/JBB-Behaviors"
+
+extraction:
+  # [PARTIALLY_SPECIFIED] §2.3 says "post-instruction token position i ∈ I" but does not define I.
+  # §C.3 / Figure 11 shows Table-5 selections using positions −5..−1. [FROM_OFFICIAL_CODE] uses
+  # the last 5 positions of the formatted prompt.
+  post_instruction_positions: [-5, -4, -3, -2, -1]
+  # §C.1 — selection filters (exact quote: "induce_score > 0", "kl_score < 0.1", "l < 0.8L").
+  induce_score_min: 0.0
+  kl_score_max: 0.1
+  max_layer_frac: 0.8
+  # [UNSPECIFIED] batch size for the forward pass that collects activations.
+  # Alternatives: 1 (memory-light), 32 (faster).
+  batch_size: 8
+
+generation:
+  # §B — "generating a full completion using greedy decoding".
+  do_sample: false
+  # [FROM_OFFICIAL_CODE] generate.py defaults to 256 new tokens for completion evaluation.
+  # Alternatives: 128 (faster), 512 (longer completions).
+  max_new_tokens: 256
+  # [UNSPECIFIED] generation batch size.
+  batch_size: 4
+
+evaluation:
+  # §D.2 — safety score uses Meta Llama Guard 2. Gated behind a flag because it
+  # requires an additional ~8B model load.
+  with_safety_score: false
+  safety_model: "meta-llama/Meta-Llama-Guard-2-8B"
